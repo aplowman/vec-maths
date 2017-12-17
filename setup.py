@@ -1,7 +1,5 @@
 from setuptools import find_packages, setup
 
-print(find_packages())
-
 setup(
     name='vecmaths',
     version="0.1",
