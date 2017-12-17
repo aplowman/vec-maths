@@ -1,0 +1,6 @@
+name: vec-maths
+dependencies:
+- python=3.6
+- pip
+- pylint
+- ipykernel
