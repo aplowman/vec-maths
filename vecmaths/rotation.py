@@ -1,44 +1,119 @@
 """Module containing functions related to different rotation representations."""
 import numpy as np
 from vecmaths.utils import prt
+from vecmaths import vectors
 
 
-def vecpair2rotmat(veca, vecb):
-    pass
-
-
-def cross_prod_mat(axis):
+def _vecpair2rotmat_stack(veca, vecb):
     """
-    Find the skew-symmetric matrix which allows representing the
-    cross product with matrix multiplication.
+    Generate stacks of rotation matrices which rotate from one set of column
+    vector directions to another.
 
     Parameters
     ----------
-    ax : ndarray
+    veca : ndarray
+        Stacks of column three-vectors. Must have innermost shape of (3, 1).
+    vecb : ndarray
+        Stacks of column three-vectors. Must have innermost shape of (3, 1).
+
+    Returns
+    -------
+    rot_mat : ndarray
+        Stacks of rotation matrices with innermost shape of (3, 3).
 
     """
 
-    if axis.ndim == 1:
-        axis = axis[:, None]
+    if veca.shape != vecb.shape:
+        raise ValueError('Shapes of `veca` and `vecb` do not '
+                         'match: {} and {}'.format(veca.shape, vecb.shape))
 
-    if axis.shape[-2:] != (3, 1):
-        raise ValueError('Inner shape of `ax` must be (N, 3, 1)'
-                         ' or (3, 1) or (3,).')
+    if veca.shape[-2:] != (3, 1):
+        raise ValueError('Innermost shapes of `veca` and `vecb` '
+                         'must be (3, 1), but is {}.'.format(veca.shape[-2:]))
 
-    ret_shape = list(axis.shape)
-    ret_shape[-1] = 3
-    ret_shape = tuple(ret_shape)
+    # Normalise
+    veca = veca / np.linalg.norm(veca, axis=-2)[..., None]
+    vecb = vecb / np.linalg.norm(vecb, axis=-2)[..., None]
 
-    ret = np.zeros(ret_shape)
+    # Cross product matrix
+    vecx = np.cross(veca, vecb, axis=-2)
+    xprod = vectors.cross_prod_mat(vecx)
 
-    ret[..., 0, 1] = -axis[..., 2, 0]
-    ret[..., 0, 2] = axis[..., 1, 0]
-    ret[..., 1, 0] = axis[..., 2, 0]
-    ret[..., 1, 2] = -axis[..., 0, 0]
-    ret[..., 2, 0] = -axis[..., 1, 0]
-    ret[..., 2, 1] = axis[..., 0, 0]
+    # Note axis `j` has size 1:
+    dot = np.einsum('...ij,...ij->...j', veca, vecb)[..., None]
 
-    return ret
+    # Find which vector pairs are anti-parallel:
+    neg = np.isclose(dot, -1)
+    neg_idx = np.where(neg)[:-2]
+    not_neg = np.logical_not(neg)
+    not_neg_idx = np.where(not_neg)[:-2]
+
+    # Find rotation matrices for anti-parallel vector pairs:
+    veca_neg = veca[neg_idx]
+    veca_perp = vectors.perpendicular(veca_neg, axis=-2)
+    rot_mat_neg = axang2rotmat(veca_perp, 180, degrees=True, axis=-2)
+
+    rot_mat = np.zeros_like(xprod)
+    rot_mat[neg_idx] = rot_mat_neg
+
+    # Find rotation matrices for remaining vector pairs:
+    xprod_nn = xprod[not_neg_idx]
+    dot_nn = dot[not_neg_idx]
+
+    rot_mat[not_neg_idx] = np.eye(3) + xprod_nn
+    rot_mat[not_neg_idx] += (xprod_nn @ xprod_nn) / (1 + dot_nn)
+
+    return rot_mat
+
+
+def vecpair2rotmat(veca, vecb, axis=0):
+    """
+    Generate stacks of rotation matrices which rotate from one set of vector
+    direction to another.
+
+    Parameters
+    ----------
+    veca : ndarray
+        Array of vectors whose directions are considered the initial
+        directions. Must have the same shape as `vecb`.
+    vecb : ndarray
+        Array of vectors whose directions are considered the final directions.
+        Must have the same shape as `veca`.
+    axis : int
+        Axis defining the vectors.
+
+    Returns
+    -------
+    rot_mat : ndarray
+        Stacks of rotation matrices with innermost shape of (3, 3).
+
+    Notes
+    -----
+    1.  Size-1 dimensions whose axis positions are greater than `axis` are
+        squeezed out.
+
+    """
+
+    if veca.shape != vecb.shape:
+        raise ValueError('Shapes of `veca` and `vecb` do not '
+                         'match: {} and {}'.format(veca.shape, vecb.shape))
+
+    if veca.shape[axis] != 3:
+        raise ValueError('Size of dimension `axis` ({}) along `veca` and '
+                         '`vecb` must be 3, but is ''{}.'.format(
+                             axis, veca.shape[axis]))
+
+    # Squeeze out size-1 dimensions after `axis`
+    inner_ax_shape = np.array(list(veca.shape[axis:]))
+    squeeze_axes = tuple(np.where(inner_ax_shape == 1)[0] + axis)
+    veca = veca.squeeze(axis=squeeze_axes).swapaxes(-1, axis)
+    vecb = vecb.squeeze(axis=squeeze_axes).swapaxes(-1, axis)
+
+    # Ensure the innermost shape is (3, 1)
+    veca = veca[..., None]
+    vecb = vecb[..., None]
+
+    return _vecpair2rotmat_stack(veca, vecb)
 
 
 def axang2rotmat(rot_ax, ang, axis=0, ndim_outer=0, degrees=False):
@@ -111,9 +186,6 @@ def axang2rotmat(rot_ax, ang, axis=0, ndim_outer=0, degrees=False):
     if axis < 0:
         axis = rot_ax.ndim + axis
 
-    # prt(axis, 'axis')
-    # prt(rot_ax.ndim, 'rot_ax.ndim')
-
     if axis >= rot_ax.ndim:
         raise ValueError('`axis` must be less than the number of '
                          'dimensions in `rot_ax`.')
@@ -127,9 +199,6 @@ def axang2rotmat(rot_ax, ang, axis=0, ndim_outer=0, degrees=False):
 
     outer_rot_ax_shp = rot_ax.shape[:ndim_outer]
     outer_ang_shp = ang.shape[:ndim_outer]
-
-    # prt(outer_rot_ax_shp, 'outer_rot_ax_shp')
-    # prt(outer_ang_shp, 'outer_ang_shp')
 
     if outer_rot_ax_shp != outer_ang_shp:
         msg = (
@@ -150,11 +219,6 @@ def axang2rotmat(rot_ax, ang, axis=0, ndim_outer=0, degrees=False):
 
     # Ensure the innermost `rot_ax` shape is (3, 1)
     rot_ax = rot_ax[..., None]
-
-    # prt(inner_ax_dim, 'inner_ax_dim')
-    # prt(inner_ax_shape, 'inner_ax_shape')
-    # prt(squeeze_axes, 'squeeze_axes')
-    # prt(rot_ax, 'rot_ax reshapped.')
 
     inner_ang_dim = ang.ndim - ndim_outer
     inner_ax_dim = rot_ax.ndim - ndim_outer
@@ -186,7 +250,7 @@ def axang2rotmat(rot_ax, ang, axis=0, ndim_outer=0, degrees=False):
         rot_ax = np.broadcast_to(ax_exp, ax_newshp)
         ang = np.broadcast_to(ang, ang_newshp)
 
-    xprod = cross_prod_mat(rot_ax)
+    xprod = vectors.cross_prod_mat(rot_ax)
     rot_mat = np.eye(3) + np.sin(ang) * xprod
     rot_mat += (1 - np.cos(ang)) * (xprod @ xprod)
 
