@@ -93,3 +93,55 @@ def perpendicular(vec, axis=-1):
     perp_vec = np.swapaxes(perp_vec, -1, axis)
 
     return perp_vec
+
+
+def vecpair_angle(veca, vecb, ref=None, axis=-1, degrees=False):
+    """Find the signed angles between a set of vectors and another.
+
+    Parameters
+    ----------
+    veca : ndarray
+        Inner shape (3,)
+    vecb : ndarray
+        Inner shape (3,)
+    axis : int, optional
+        The axis along which each 3-vector is defined. By default, the last
+        axis.
+    ref : ndarray of size 3 or None, optional
+        Reference vector used to determine which +/- axis to use for the
+        rotation. If ndarray, must have size 3. For each vector pair, the
+        rotation axis closest to the reference vector will be chosen. If None,
+        the reference vector is taken as the cross product of each vector pair,
+        i.e. all returned angles will be positive. By default, None.
+    degrees : bool, optional
+        If True returned angles are in degrees, else in radians. By default,
+        False.
+
+    Returns
+    -------
+    theta : ndarray
+
+    """
+
+    # Reshape
+    veca = np.swapaxes(veca, -1, axis)
+    vecb = np.swapaxes(vecb, -1, axis)
+
+    vecx = np.cross(veca, vecb, axis=-1)
+    vecx_normd = vecx / np.linalg.norm(vecx, axis=-1)[..., None]
+
+    if ref is not None:
+        ref = np.squeeze(ref)
+        ref_normd = ref / np.linalg.norm(ref, axis=-1)
+        ref_dot = np.einsum('i,...i->...', ref_normd, vecx_normd)
+        vecx_normd[ref_dot < 0] *= -1
+
+    dot_spec = '...i,...i->...'
+    dot = np.einsum(dot_spec, veca, vecb)
+    tri_prod = np.einsum(dot_spec, vecx, vecx_normd)
+    theta = np.arctan2(tri_prod, dot)
+
+    if degrees:
+        theta = np.rad2deg(theta)
+
+    return theta
