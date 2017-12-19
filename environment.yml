@@ -4,3 +4,4 @@ dependencies:
 - pip
 - pylint
 - ipykernel
+- rope
