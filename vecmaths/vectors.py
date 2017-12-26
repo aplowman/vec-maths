@@ -1,6 +1,23 @@
 """Module containing functions related to general vector operations."""
 import numpy as np
 
+def validate_vecpairs(veca, vecb, axis):
+    """Validate the input form of vector pair functions."""
+
+    if veca.shape != vecb.shape:
+        raise ValueError('`veca` and `vecb` must have the same shape, but have'
+                         ' shapes: {} and {}.'.format(veca.shape, vecb.shape))
+
+    if axis >= veca.ndim:
+        raise ValueError('`veca` and `vecb` have {} dimensions, but axis '
+                         'is: {}.'.format(veca.ndim, axis))
+
+    if veca.shape[axis] != 3:
+        raise ValueError('The `axis` ({}) dimension of `veca` and `vecb` must '
+                         'define the axis along which the three-vectors are '
+                         'defined and must have length 3, but have '
+                         'length {}.'.format(axis, veca.shape[axis]))
+
 
 def cross_prod_mat(axis):
     """
@@ -101,9 +118,9 @@ def vecpair_angle(veca, vecb, ref=None, axis=-1, degrees=False):
     Parameters
     ----------
     veca : ndarray
-        Inner shape (3,)
+        The first set of vectors.
     vecb : ndarray
-        Inner shape (3,)
+        The second set of vectors.
     axis : int, optional
         The axis along which each 3-vector is defined. By default, the last
         axis.
@@ -122,6 +139,8 @@ def vecpair_angle(veca, vecb, ref=None, axis=-1, degrees=False):
     theta : ndarray
 
     """
+
+    validate_vecpairs(veca, vecb, axis)
 
     # Reshape
     veca = np.swapaxes(veca, -1, axis)
@@ -145,3 +164,77 @@ def vecpair_angle(veca, vecb, ref=None, axis=-1, degrees=False):
         theta = np.rad2deg(theta)
 
     return theta
+
+def vecpair_cos(veca, vecb, axis=-1):
+    """Find the cosines between a set of vectors and another.
+
+    Parameters
+    ----------
+    veca : ndarray
+        The first set of vectors.
+    vecb : ndarray
+        The second set of vectors.
+    axis : int, optional
+        The axis along which each 3-vector is defined. By default, the last
+        axis.
+
+    Returns
+    -------
+    cosines : ndarray
+        Array with the same shape as input vectors except for the removed 
+        `axis` dimension.
+
+    """
+    validate_vecpairs(veca, vecb, axis)
+
+    # Reshape
+    veca = np.swapaxes(veca, -1, axis)
+    vecb = np.swapaxes(vecb, -1, axis)
+
+    veca_normd = veca / np.linalg.norm(veca, axis=-1)[..., None]
+    vecb_normd = vecb / np.linalg.norm(vecb, axis=-1)[..., None]
+
+    cosines = np.einsum('...i,...i->...', veca_normd, vecb_normd)[..., None]
+
+    # Reshape to original axis order
+    cosines = np.swapaxes(cosines, -1, axis).squeeze(axis=axis)
+
+    return cosines
+
+def vecpair_sin(veca, vecb, axis=-1):
+    """Find the sines between a set of vectors and another.
+
+    Parameters
+    ----------
+    veca : ndarray
+        The first set of vectors.
+    vecb : ndarray
+        The second set of vectors.
+    axis : int, optional
+        The axis along which each 3-vector is defined. By default, the last
+        axis.
+
+    Returns
+    -------
+    sines : ndarray
+        Array with the same shape as input vectors except for the removed 
+        `axis` dimension.
+
+    """
+
+    validate_vecpairs(veca, vecb, axis)
+
+    # Reshape
+    veca = np.swapaxes(veca, -1, axis)
+    vecb = np.swapaxes(vecb, -1, axis)
+
+    veca_normd = veca / np.linalg.norm(veca, axis=-1)[..., None]
+    vecb_normd = vecb / np.linalg.norm(vecb, axis=-1)[..., None]
+
+    xprod = np.cross(veca_normd, vecb_normd, axis=-1)
+
+    # Reshape to original axis order
+    xprod = np.swapaxes(xprod, -1, axis)
+    sines = np.linalg.norm(xprod, axis=axis)
+
+    return sines
