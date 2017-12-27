@@ -1,3 +1,5 @@
+"""Pip installation script."""
+
 from setuptools import find_packages, setup
 
 setup(

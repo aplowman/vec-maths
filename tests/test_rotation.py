@@ -1,4 +1,4 @@
-"""Module defining unit tests on the vecutils.rotation module."""
+"""Module containing unit tests on the vecutils.rotation module."""
 
 import unittest
 import copy

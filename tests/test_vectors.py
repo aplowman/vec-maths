@@ -1,4 +1,4 @@
-"""Module defining unit tests on the vecutils.vectors module."""
+"""Module containing unit tests on the vecutils.vectors module."""
 
 import unittest
 import numpy as np
@@ -60,6 +60,7 @@ class VecPairCosTestCase(unittest.TestCase):
         cos = vectors.vecpair_cos(veca, vecb)
         cos_normd_vecs = vectors.vecpair_cos(veca_normd, vecb_normd)
         self.assertTrue(np.isclose(cos, cos_normd_vecs))
+
 
 class VecPairSinTestCase(unittest.TestCase):
     """Tests on function `vectors.vecpair_sin`."""

@@ -1,6 +1,7 @@
 """Module containing functions related to general vector operations."""
 import numpy as np
 
+
 def validate_vecpairs(veca, vecb, axis):
     """Validate the input form of vector pair functions."""
 
@@ -165,6 +166,7 @@ def vecpair_angle(veca, vecb, ref=None, axis=-1, degrees=False):
 
     return theta
 
+
 def vecpair_cos(veca, vecb, axis=-1):
     """Find the cosines between a set of vectors and another.
 
@@ -200,6 +202,7 @@ def vecpair_cos(veca, vecb, axis=-1):
     cosines = np.swapaxes(cosines, -1, axis).squeeze(axis=axis)
 
     return cosines
+
 
 def vecpair_sin(veca, vecb, axis=-1):
     """Find the sines between a set of vectors and another.
