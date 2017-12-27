@@ -357,3 +357,45 @@ def rotmat2axang(rot_mat, degrees=False):
     rot_ax = rot_ax[..., None]
 
     return (rot_ax, angle)
+
+
+def align_xy(box):
+    """Align a parallelepiped such that the first edge vector is along x and
+    the second is in the xy-plane.
+
+    Parameters
+    ----------
+    box : ndarray of shape (3, 3)
+        Array of column vectors representing edge vectors of a parallelepiped.
+
+    Returns
+    -------
+    aligned_box : ndarray of shape (3, 3)
+        Array of column vectors representing edge vectors of rotated
+        parallelepiped.
+
+    """
+
+    veca = box[:, 0]
+    vecb = box[:, 1]
+    vecc = box[:, 2]
+
+    amag, bmag, cmag = [np.linalg.norm(i) for i in [veca, vecb, vecc]]
+
+    cos_gamma = vectors.vecpair_cos(veca, vecb)
+    sin_gamma = vectors.vecpair_sin(veca, vecb)
+    cos_beta = vectors.vecpair_cos(vecc, veca)
+    bc_dot = np.einsum('i,i->', vecb, vecc)
+
+    b_x = bmag * cos_gamma
+    b_y = bmag * sin_gamma
+    c_x = cmag * cos_beta
+    c_y = (bc_dot - (b_x * c_x)) / b_y
+
+    veca_new = np.array([amag, 0, 0])
+    vecb_new = np.array([b_x, b_y, 0])
+    vecc_new = np.array([c_x, c_y, np.sqrt(cmag**2 - c_x**2 - c_y**2)])
+
+    aligned_box = np.vstack([veca_new, vecb_new, vecc_new]).T
+
+    return aligned_box

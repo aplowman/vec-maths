@@ -4,6 +4,8 @@ import unittest
 import copy
 import numpy as np
 from vecmaths import rotation
+from vecmaths import vectors
+from vecmaths.utils import prt
 
 
 class RotMatAxAngConsistencyTestCase(unittest.TestCase):
@@ -207,3 +209,60 @@ class AxAng2RotMatTestCase(unittest.TestCase):
         rot_mat_sing = rotation.axang2rotmat(**params_single)
 
         self.assertTrue(np.allclose(rot_mat_mult[0, 0], rot_mat_sing))
+
+
+class AlignXYTestCase(unittest.TestCase):
+    """Tests on function `rotation.align_xy`"""
+
+    def test_alignment(self):
+        """Check first vector is aligned in the x-direction and second vector
+        is aligned in the xy-plane.
+
+        """
+        box = np.random.random((3, 3))
+        box_aligned = rotation.align_xy(box)
+        self.assertTrue(np.allclose(box_aligned[[1, 2, 2], [0, 0, 1]], 0))
+
+    def test_consistent_volume(self):
+        """Check volume of box remains the same after alignment."""
+
+        def get_volume(box):
+            """Get the volume of a parallelepiped."""
+            signed_vol = np.dot(np.cross(box[:, 0], box[:, 1]), box[:, 2])
+            vol = np.linalg.norm(signed_vol)
+            return vol
+
+        box = np.random.random((3, 3))
+        vol = get_volume(box)
+        box_aligned = rotation.align_xy(box)
+        vol_aligned = get_volume(box_aligned)
+
+        self.assertAlmostEqual(vol, vol_aligned)
+
+    def test_edge_lengths(self):
+        """Check edge lengths of box remain the same after alignment."""
+
+        box = np.random.random((3, 3))
+        box_aligned = rotation.align_xy(box)
+
+        box_mag = np.linalg.norm(box, axis=0)
+        box_aligned_mag = np.linalg.norm(box_aligned, axis=0)
+
+        self.assertTrue(np.allclose(box_mag, box_aligned_mag))
+
+    def test_internal_angles(self):
+        """Check internal angles of box remain the same after alignment."""
+
+        def get_internal_angles(box):
+            """Get internal angles of a box."""
+            ang = vectors.vecpair_angle(box[:, [0, 0, 1]],
+                                        box[:, [1, 2, 2]], axis=0)
+            return ang
+
+        box = np.random.random((3, 3))
+        box_aligned = rotation.align_xy(box)
+
+        ang = get_internal_angles(box)
+        ang_aligned = get_internal_angles(box_aligned)
+
+        self.assertTrue(np.allclose(ang, ang_aligned))
