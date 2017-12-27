@@ -36,9 +36,9 @@ def prt(obj, name, slc=None):
 
         fmt_str = ''
         fmts = []
-        for k, v in sorted(obj.items()):
+        for key, val in sorted(obj.items()):
             fmt_str += '{}: {}\n'
-            fmts.extend([k, v])
+            fmts.extend([key, val])
 
     else:
 

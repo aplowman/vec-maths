@@ -183,7 +183,7 @@ def vecpair_cos(veca, vecb, axis=-1):
     Returns
     -------
     cosines : ndarray
-        Array with the same shape as input vectors except for the removed 
+        Array with the same shape as input vectors except for the removed
         `axis` dimension.
 
     """
@@ -220,7 +220,7 @@ def vecpair_sin(veca, vecb, axis=-1):
     Returns
     -------
     sines : ndarray
-        Array with the same shape as input vectors except for the removed 
+        Array with the same shape as input vectors except for the removed
         `axis` dimension.
 
     """
