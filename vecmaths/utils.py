@@ -46,3 +46,27 @@ def prt(obj, name, slc=None):
         fmts = (name, type(obj), obj)
 
     print(fmt_str.format(*fmts))
+
+
+def snap_arr(arr, val, tol):
+    """Snap array elements within a certain value.
+
+    Parameters
+    ----------
+    arr : ndarray
+    val : float
+        Value to snap to.
+    tol : float
+        Array elements within this tolerance of `val` will be snapped to `val`.
+
+    Returns
+    -------
+    arr_snapped : ndarray
+        Copy of input array, where elements which are close to `val` are set to
+        be exactly `val` if within tolerance `tol`.
+
+    """
+
+    arr_snapped = np.copy(arr)
+    arr_snapped[abs(arr - val) < tol] = val
+    return arr_snapped
