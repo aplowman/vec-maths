@@ -1,6 +1,36 @@
-"""Module containing functions related to general vector operations."""
+"""Module containing functions related to general vector operations.
+
+TODO: use `normalise` throughout this module.
+
+"""
 from itertools import permutations, combinations
 import numpy as np
+
+
+def normalise(vecs):
+    """Normalise an n-dimensional array of three-vectors.
+
+    Only non-zero vectors are normalised.
+
+    Parameters
+    ----------
+    vecs : ndarray of innermost shape (3,)
+        The innermost axis defines the three vector.
+
+    Returns
+    -------
+    vecs_normd : ndarray with same shape as input array
+
+    """
+    if vecs.shape[-1] != 3:
+        raise ValueError('Last axis must have size of three.')
+
+    norm = np.linalg.norm(vecs, axis=-1)
+    non_zero = np.logical_not(np.isclose(norm, 0))
+    vecs_normd = np.copy(vecs)
+    vecs_normd[non_zero] = vecs_normd[non_zero] / norm[non_zero][..., None]
+
+    return vecs_normd
 
 
 def validate_vecpairs(veca, vecb, axis):
@@ -149,7 +179,7 @@ def vecpair_angle(veca, vecb, ref=None, axis=-1, degrees=False):
     vecb = np.swapaxes(vecb, -1, axis)
 
     vecx = np.cross(veca, vecb, axis=-1)
-    vecx_normd = vecx / np.linalg.norm(vecx, axis=-1)[..., None]
+    vecx_normd = normalise(vecx)
 
     if ref is not None:
         ref = np.squeeze(ref)
