@@ -132,7 +132,7 @@ def axang2rotmat(rot_ax, ang, axis=0, ndim_outer=0, degrees=False):
         One or more rotation angles. See Notes for details on allowed shapes.
     axis : int
         The axis of `rot_ax` corresponding to each rotation axis. This axis
-        should have length three. By defaut, set to 0.
+        should have length three. By default, set to 0.
     ndim_outer : int, optional
         Determines the number of outer dimensions. The first `ndim_outer`
         dimensions of both `ax` and `ang` must have the same size. By
