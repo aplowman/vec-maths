@@ -7,8 +7,8 @@ from itertools import permutations, combinations
 import numpy as np
 
 
-def normalise(vecs):
-    """Normalise an n-dimensional array of three-vectors.
+def normalise(vecs, axis=-1):
+    """Normalise an n-dimensional array of vectors.
 
     Only non-zero vectors are normalised.
 
@@ -16,19 +16,32 @@ def normalise(vecs):
     ----------
     vecs : ndarray of innermost shape (3,)
         The innermost axis defines the three vector.
+    axis : int, optional
+        The axis which defines the vectors. Set to the last 
+        axis (-1) by default.
 
     Returns
     -------
     vecs_normd : ndarray with same shape as input array
 
     """
-    if vecs.shape[-1] != 3:
-        raise ValueError('Last axis must have size of three.')
+    if axis < 0:
+        axis = len(vecs.shape) + axis
 
-    norm = np.linalg.norm(vecs, axis=-1)
-    non_zero = np.logical_not(np.isclose(norm, 0))
+    norm = np.linalg.norm(vecs, axis=axis)
+
+    vecs_shp_pre_ax = vecs.shape[:axis]
+    vecs_shp_post_ax = vecs.shape[axis + 1:]
+    norm_shpe = vecs_shp_pre_ax + (1,) + vecs_shp_post_ax
+
+    norm_rs = norm.reshape(norm_shpe)
+    norm_rs_rep = np.repeat(norm_rs, vecs.shape[axis], axis=axis)
+    norm_non_zero = np.logical_not(np.isclose(norm_rs_rep, 0))
+
     vecs_normd = np.copy(vecs)
-    vecs_normd[non_zero] = vecs_normd[non_zero] / norm[non_zero][..., None]
+    vecs_normd[norm_non_zero] = (
+        vecs_normd[norm_non_zero] / norm_rs_rep[norm_non_zero]
+    )
 
     return vecs_normd
 
@@ -313,7 +326,7 @@ def find_positive_int_vecs(search_size, dim=3):
     uniq, uniq_inv = np.unique(trial_combs_all, axis=0, return_inverse=True)
 
     # For a given set of (anti-)parallel vectors, we want the smallest, so get
-    # their relative magnitudes. This is neccessary since `np.unique` does not
+    # their relative magnitudes. This is necessary since `np.unique` does not
     # return vectors sorted in a sensible way if there are negative components.
     # (But we do we have negative components here?)
     uniq_mag = np.sum(uniq**2, axis=1)
