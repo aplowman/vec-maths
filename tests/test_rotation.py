@@ -8,9 +8,6 @@ from vecmaths import vectors
 from vecmaths.utils import prt
 
 
-print('numpy version: {}'.format(np.version.full_version))
-
-
 class RotMatAxAngConsistencyTestCase(unittest.TestCase):
     """
     Tests on consistency between rotation matrix and axis-angle
