@@ -9,6 +9,6 @@ setup(
     author='Adam J Plowman, Maria S Yankova',
     packages=find_packages(),
     install_requires=[
-        'numpy>=3.5',
+        'numpy',
     ],
 )
