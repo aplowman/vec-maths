@@ -4,3 +4,6 @@
 
 # vec-maths
 A collection of maths functions in Python.
+
+## Installation
+`pip install vecmaths`
