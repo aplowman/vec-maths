@@ -257,7 +257,7 @@ def axang2rotmat(rot_ax, ang, axis=0, ndim_outer=0, degrees=False):
     return rot_mat
 
 
-def rotmat2axang(rot_mat, degrees=False):
+def rotmat2axang(rot_mat, degrees=False, tol=1e-10):
     """
     Decompose rotation matrices into axis-angle representations.
 
@@ -289,8 +289,6 @@ def rotmat2axang(rot_mat, degrees=False):
       and apply here if necessary.
 
     """
-
-    tol = 1e-10
 
     # Check dimensions
     if rot_mat.shape[-2:] != (3, 3):
