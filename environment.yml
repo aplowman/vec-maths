@@ -1,4 +1,4 @@
-name: vec-maths
+name: vecmaths_env
 dependencies:
 - python=3.6
 - pip
