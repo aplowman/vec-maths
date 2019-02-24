@@ -70,3 +70,56 @@ def snap_arr(arr, val, tol):
     arr_snapped = np.copy(arr)
     arr_snapped[abs(arr - val) < tol] = val
     return arr_snapped
+
+
+def validate_array_args(*args):
+    """Validate the shapes of a set of Numpy arrays.
+
+    Parameters
+    ----------
+    arg : tuple of (str, ndarray, tuple of (str or int))
+        Each arg has: the name of a Numpy array, the array itself, and the 
+        expected shape of the array. The expected shape is passed as a tuple,
+        whose elements maybe integers of strings; if a string, the element
+        represent a symbol used to represent the shape in that dimension.
+
+    Notes
+    -----
+    This function also checks that, if symbols have been repeated in the
+    elements of expected array shapes for multiple arrays, those dimension
+    sizes are consistent across the different arrays.
+
+    Returns
+    -------
+    None
+
+    Example
+    -------
+
+    """
+
+    symbols = {}
+    arr_msg = ('`{}` must be a Numpy array of shape {}')
+    multi_msg = ('Inconsistent dimension size for symbol: {}')
+
+    for i in args:
+
+        name = i[0]
+        arr = i[1]
+        shape = i[2]
+
+        if not isinstance(arr, np.ndarray) or (arr.ndim != len(shape)):
+            raise ValueError(arr_msg.format(name, shape))
+
+        for i_idx, i in enumerate(shape):
+
+            if isinstance(i, str):
+                if i not in symbols:
+                    symbols[i] = arr.shape[i_idx]
+                else:
+                    if arr.shape[i_idx] != symbols[i]:
+                        raise ValueError(multi_msg.format(symbols[i]))
+                continue
+
+            if arr.shape[i_idx] != i:
+                raise ValueError(arr_msg)
