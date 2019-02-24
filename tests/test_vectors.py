@@ -1,4 +1,4 @@
-"""Module containing unit tests on the vecutils.vectors module."""
+"""Module containing unit tests on the `vecmaths.vectors` module."""
 
 import unittest
 import numpy as np
