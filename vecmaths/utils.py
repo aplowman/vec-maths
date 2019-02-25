@@ -154,8 +154,8 @@ def get_half_space_flip_idx(vecs):
 
     in_shp = vecs.shape[-2:]
     if in_shp != (3, 1):
-        msg = (f'Input array must have inner shape (3, 1), '
-               f'but has inner shape: {in_shp}')
+        msg = ('Input array must have inner shape (3, 1), '
+               'but has inner shape: {}'.format(in_shp))
         raise ValueError(msg)
 
     a = vecs[..., 0, 0]
