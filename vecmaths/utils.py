@@ -123,3 +123,55 @@ def validate_array_args(*args):
 
             if arr.shape[i_idx] != i:
                 raise ValueError(arr_msg)
+
+
+def get_half_space_flip_idx(vecs):
+    """Get the indices of vectors that, if multiplied by minus one, would
+    ensure no anti-parallel vectors in the set.
+
+    Parameters
+    ----------
+    vecs : ndarray of inner shape (3, 1)
+
+    Returns
+    -------
+    flip_idx : ndarray
+
+    Notes
+    -----
+    For a set of vectors in R3, we might want to map all vectors such that no
+    two are anti-parallel. This function returns, for a set of vectors, the
+    indices of vectors that require flipping (i.e. multiplying by -1) in order
+    to ensure the whole set of vectors is contained within the positive-x half-
+    space.
+
+    Specifically, the conditions for flipping are:
+        - [x-component < 0] OR
+        - [(x-component == 0) and (y-component < 0)] OR
+        - [(x-component == 0) and (y-component == 0) and (z-component < 0)]
+
+    """
+
+    in_shp = vecs.shape[-2:]
+    if in_shp != (3, 1):
+        msg = (f'Input array must have inner shape (3, 1), '
+               f'but has inner shape: {in_shp}')
+        raise ValueError(msg)
+
+    a = vecs[..., 0, 0]
+    b = vecs[..., 1, 0]
+    c = vecs[..., 2, 0]
+
+    flip_cond = np.logical_or(
+        np.logical_or(
+            a < 0,
+            np.logical_and(np.isclose(a, 0), b < 0),
+        ),
+        np.logical_and(
+            np.logical_and(np.isclose(a, 0), np.isclose(b, 0)),
+            c < 0
+        )
+    )
+    flip_idx = np.where(flip_cond)
+
+    return flip_idx
