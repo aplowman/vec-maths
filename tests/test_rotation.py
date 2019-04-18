@@ -266,3 +266,15 @@ class AlignXYTestCase(unittest.TestCase):
         ang_aligned = get_internal_angles(box_aligned)
 
         self.assertTrue(np.allclose(ang, ang_aligned))
+
+
+class VecPair2RotMatTestCase(unittest.TestCase):
+    """Tests on function `rotation.vecpair2rotmat`."""
+
+    def test_single_anti_parallel_valid(self):
+        """Test non-nan output for a single, known anti-parallel pair."""
+
+        veca = np.array([0, 0, 1])
+        vecb = np.array([0, 0, -1])
+        rot_mat = rotation.vecpair2rotmat(veca, vecb)
+        self.assertFalse(np.any(np.isnan(rot_mat)))

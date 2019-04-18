@@ -60,8 +60,9 @@ def _vecpair2rotmat_stack(veca, vecb):
     xprod_nn = xprod[not_neg_idx]
     dot_nn = dot[not_neg_idx]
 
-    rot_mat[not_neg_idx] = np.eye(3) + xprod_nn
-    rot_mat[not_neg_idx] += (xprod_nn @ xprod_nn) / (1 + dot_nn)
+    if not_neg_idx:
+        rot_mat[not_neg_idx] = np.eye(3) + xprod_nn
+        rot_mat[not_neg_idx] += (xprod_nn @ xprod_nn) / (1 + dot_nn)
 
     return rot_mat
 
