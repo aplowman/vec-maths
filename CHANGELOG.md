@@ -1,5 +1,15 @@
 # Change Log
 
+## [0.1.3] - 2019.04.21
+
+### Added
+
+- Add function `get_random_rotation_matrix` to `rotation` module, for generating (stacks of) matrices representing random 3D rotations.
+
+### Fixed
+
+- Fix problem with `rotation.rotmat2axang` where passing a single identity matrix raises a `ValueError`, due to a vectorisation issue.
+
 ## [0.1.2] - 2019.04.21
 
 ### Fixed

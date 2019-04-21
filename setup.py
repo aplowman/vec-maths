@@ -4,7 +4,7 @@ from setuptools import find_packages, setup
 
 setup(
     name='vecmaths',
-    version="0.1.2",
+    version="0.1.3",
     description="A collection of (mostly vectorised) maths functions in Python.",
     author='Adam J Plowman, Maria S Yankova',
     packages=find_packages(),
