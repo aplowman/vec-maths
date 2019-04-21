@@ -353,3 +353,15 @@ class VecPair2RotMatStackTestCase(unittest.TestCase):
         test_rot_mat = rotation._vecpair2rotmat_stack(test_veca, test_vecb)
 
         self.assertTrue(np.allclose(rot_mat[test_idx], test_rot_mat))
+
+
+class RandomRotationMatrixTestCase(unittest.TestCase):
+    """Tests on function `rotation.get_random_rotation_matrix`."""
+
+    def test_unit_determinant(self):
+        """Test the rotation matrix has a unit determinant."""
+
+        rot = rotation.get_random_rotation_matrix()
+        det = np.linalg.det(rot)
+
+        self.assertAlmostEqual(det, 1)

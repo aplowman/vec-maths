@@ -403,3 +403,35 @@ def align_xy(box):
     aligned_box = np.vstack([veca_new, vecb_new, vecc_new]).T
 
     return aligned_box
+
+
+def get_random_rotation_matrix(shape=None):
+    """Generate a stack of random rotation matrices."""
+
+    if not shape:
+        shape = (1,)
+
+    single = False
+    if shape == (1,):
+        single = True
+
+    # Task is to form sets of orthonormal bases in 3D
+
+    # Choose the first vectors randomly:
+    vecs_ab_shp = shape + (3, 1)
+    vecs_a = np.random.random(vecs_ab_shp)
+
+    # Get vectors perpendicular to `vecs_a`:
+    vecs_b = vectors.perpendicular(vecs_a, axis=-2)
+
+    # Get vectors perpendicular to `vecs_a` and `vecs_b`:
+    vecs_c = np.cross(vecs_a, vecs_b, axisa=-2, axisb=-2, axisc=-2)
+
+    # Concatenate and normalise:
+    rot = np.concatenate([vecs_a, vecs_b, vecs_c], axis=-1)
+    rot_norm = vectors.normalise(rot, axis=-2)
+
+    if single:
+        rot_norm = rot_norm[0]
+
+    return rot_norm
