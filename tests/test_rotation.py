@@ -89,6 +89,28 @@ class RotMat2AxAngTestCase(unittest.TestCase):
 
         self.assertTrue(axis_equal and angle_equal)
 
+    def test_identity_matrix(self):
+        """Test a sensible result for the identity matrix."""
+
+        rot = np.eye(3)
+        _, ang = rotation.rotmat2axang(rot)
+        self.assertAlmostEqual(ang, 0)
+
+    def test_vectorisation(self):
+        """Test for same result for a given matrix regardless of whether it is
+        part of a larger stack of matrices."""
+
+        shape = (3, 2, 4)
+        test_idx = (0, 1, 2)
+        rots = rotation.get_random_rotation_matrix(shape)
+        ax, ang = rotation.rotmat2axang(rots)
+        test_ax, test_ang = rotation.rotmat2axang(rots[test_idx])
+
+        self.assertTrue(
+            np.allclose(ax[test_idx], test_ax) and
+            np.allclose(ang[test_idx], test_ang)
+        )
+
 
 class AxAng2RotMatTestCase(unittest.TestCase):
     """Unit tests on the function `rotation.axang2rotmat`."""

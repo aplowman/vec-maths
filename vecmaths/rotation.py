@@ -300,6 +300,11 @@ def rotmat2axang(rot_mat, degrees=False, tol=1e-10):
     if rot_mat.shape[-2:] != (3, 3):
         raise ValueError('`rot_mat` must have inner dimensions (3, 3).')
 
+    single_mat = False
+    if rot_mat.shape == (3, 3):
+        single_mat = True
+        rot_mat = rot_mat[None]
+
     trc = np.trace(rot_mat, axis1=-2, axis2=-1)
     angle = np.arccos(np.clip(0.5 * (trc - 1), -1, 1))
 
@@ -312,7 +317,7 @@ def rotmat2axang(rot_mat, degrees=False, tol=1e-10):
     ang_zero = np.isclose(angle, 0.0)
     ang_zero_idx = np.where(ang_zero)
 
-    if len(ang_zero_idx[0]) != 0:
+    if ang_zero_idx[0].size:
         rot_ax[ang_zero_idx] = [0, 0, 1]
 
     # Find eigenvalues, eigenvectors for `rot_mat`
@@ -359,6 +364,10 @@ def rotmat2axang(rot_mat, degrees=False, tol=1e-10):
 
     # Return axes as stacks of column vectors
     rot_ax = rot_ax[..., None]
+
+    if single_mat:
+        rot_ax = rot_ax[0]
+        angle = angle[0]
 
     return (rot_ax, angle)
 
