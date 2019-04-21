@@ -268,13 +268,88 @@ class AlignXYTestCase(unittest.TestCase):
         self.assertTrue(np.allclose(ang, ang_aligned))
 
 
-class VecPair2RotMatTestCase(unittest.TestCase):
+class VecPair2RotMatStackTestCase(unittest.TestCase):
     """Tests on function `rotation.vecpair2rotmat`."""
 
     def test_single_anti_parallel_valid(self):
-        """Test non-nan output for a single, known anti-parallel pair."""
+        """Test non-nan output for a single anti-parallel pair."""
 
-        veca = np.array([0, 0, 1])
-        vecb = np.array([0, 0, -1])
-        rot_mat = rotation.vecpair2rotmat(veca, vecb)
+        veca = np.array([0, 0, 1]).reshape((3, 1))
+        vecb = np.array([0, 0, -1]).reshape((3, 1))
+        rot_mat = rotation._vecpair2rotmat_stack(veca, vecb)
+
         self.assertFalse(np.any(np.isnan(rot_mat)))
+
+    def test_single_anti_parallel_known_angle(self):
+        """Test rotation matrix with correct angle decomposition is generated
+        for a know anti-parallel pair."""
+
+        veca = np.array([0, 0, 1]).reshape((3, 1))
+        vecb = np.array([0, 0, -1]).reshape((3, 1))
+        rot_mat = rotation._vecpair2rotmat_stack(veca, vecb)
+        _, ang = rotation.rotmat2axang(rot_mat, degrees=True)
+
+        self.assertAlmostEqual(ang, 180)
+
+    def test_single_known(self):
+        """Test a single vector pair returns the correct result."""
+
+        veca = np.array([1, 0, 0]).reshape((3, 1))
+        vecb = np.array([1, 1, 0]).reshape((3, 1))  # i.e. 45 degs about z-axis
+        rot_mat = rotation._vecpair2rotmat_stack(veca, vecb)
+
+        rad = np.deg2rad(45)
+        cos = np.cos(rad)
+        sin = np.sin(rad)
+
+        expected = np.array([
+            [cos, -sin, 0],
+            [sin, cos, 0],
+            [0, 0, 1]
+        ])
+
+        self.assertTrue(np.allclose(rot_mat, expected))
+
+    def test_vec_length_agnostic(self):
+        """Test the vector lengths do not matter."""
+
+        veca = np.random.random((3, 1))
+        vecb = np.random.random((3, 1))
+        vec_a_norm = veca / np.linalg.norm(veca)
+        vec_b_norm = vecb / np.linalg.norm(vecb)
+        rot_mat = rotation._vecpair2rotmat_stack(veca, vecb)
+        rot_mat_norm = rotation._vecpair2rotmat_stack(vec_a_norm, vec_b_norm)
+
+        self.assertTrue(np.allclose(rot_mat, rot_mat_norm))
+
+    def test_rot_mat_axis_perpendicular(self):
+        """Test the computed rotation matrix axis is perpendicular to the
+        original vectors."""
+
+        veca = np.random.random((3, 1))
+        vecb = np.random.random((3, 1))
+        rot_mat = rotation._vecpair2rotmat_stack(veca, vecb)
+
+        ax, _ = rotation.rotmat2axang(rot_mat)
+        xprod = np.cross(veca, vecb, axis=0)
+
+        ax_norm = ax / np.linalg.norm(ax)
+        xprod_norm = xprod / np.linalg.norm(xprod)
+
+        self.assertTrue(np.allclose(ax_norm, xprod_norm))
+
+    def test_vectorisation(self):
+        """Test for same result for a given pair regardless of whether it is
+        part of a larger stack of vector pairs."""
+
+        veca = np.random.random((2, 4, 3, 1))
+        vecb = np.random.random((2, 4, 3, 1))
+
+        test_idx = (1, 2)
+        test_veca = veca[test_idx]
+        test_vecb = vecb[test_idx]
+
+        rot_mat = rotation._vecpair2rotmat_stack(veca, vecb)
+        test_rot_mat = rotation._vecpair2rotmat_stack(test_veca, test_vecb)
+
+        self.assertTrue(np.allclose(rot_mat[test_idx], test_rot_mat))

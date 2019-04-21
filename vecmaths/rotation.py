@@ -44,9 +44,13 @@ def _vecpair2rotmat_stack(veca, vecb):
 
     # Find which vector pairs are anti-parallel:
     neg = np.isclose(dot, -1)
-    neg_idx = np.where(neg)[:-2]
+    neg_idx_full = np.where(neg)
     not_neg = np.logical_not(neg)
-    not_neg_idx = np.where(not_neg)[:-2]
+    not_neg_idx_full = np.where(not_neg)
+
+    # Vector indices rather than component indices:
+    neg_idx = neg_idx_full[:-2]
+    not_neg_idx = not_neg_idx_full[:-2]
 
     # Find rotation matrices for anti-parallel vector pairs:
     veca_neg = veca[neg_idx]
@@ -56,11 +60,12 @@ def _vecpair2rotmat_stack(veca, vecb):
     rot_mat = np.zeros_like(xprod)
     rot_mat[neg_idx] = rot_mat_neg
 
-    # Find rotation matrices for remaining vector pairs:
-    xprod_nn = xprod[not_neg_idx]
-    dot_nn = dot[not_neg_idx]
+    if not_neg_idx_full[0].size:
 
-    if not_neg_idx:
+        # Find rotation matrices for remaining vector pairs:
+        xprod_nn = xprod[not_neg_idx]
+        dot_nn = dot[not_neg_idx]
+
         rot_mat[not_neg_idx] = np.eye(3) + xprod_nn
         rot_mat[not_neg_idx] += (xprod_nn @ xprod_nn) / (1 + dot_nn)
 
