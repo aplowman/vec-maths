@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.1.2] - 2019.04.21
+
+### Fixed
+
+- Fix problem with `rotation.vecpair2rotmat` introduced by previous bug fix, whereby the returned matrices for non-anti-parallel vector pairs are incorrect.
+
 ## [0.1.1] - 2019.04.18
 
 ### Fixed
