@@ -111,7 +111,7 @@ class AxAng2RotMatTestCase(unittest.TestCase):
 
     def test_degrees_to_radians(self):
         """
-        Test indentical rotation matrices are generated whether angles are
+        Test identical rotation matrices are generated whether angles are
         input in degrees or radians.
 
         """
