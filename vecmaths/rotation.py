@@ -414,8 +414,16 @@ def align_xy(box):
     return aligned_box
 
 
-def get_random_rotation_matrix(shape=None):
+def get_random_rotation_matrix(shape=None, method='orthonormal_basis', max_angle_deg=None):
     """Generate a stack of random rotation matrices."""
+
+    allowed_methods = ['orthonormal_basis', 'axis_angle']
+    if method not in allowed_methods:
+        raise ValueError('`method` must be one of: {}'.format(allowed_methods))
+
+    if max_angle_deg is not None and method != 'axis_angle':
+        msg = '`max_angle_deg` must only be specified for `method=orthonormal_basis`.'
+        raise ValueError(msg)
 
     if not shape:
         shape = (1,)
@@ -424,23 +432,48 @@ def get_random_rotation_matrix(shape=None):
     if shape == (1,):
         single = True
 
-    # Task is to form sets of orthonormal bases in 3D
+    if method == 'orthonormal_basis':
 
-    # Choose the first vectors randomly:
-    vecs_ab_shp = shape + (3, 1)
-    vecs_a = np.random.random(vecs_ab_shp)
+        # Task is to form sets of orthonormal bases in 3D
 
-    # Get vectors perpendicular to `vecs_a`:
-    vecs_b = vectors.perpendicular(vecs_a, axis=-2)
+        # Choose the first vectors randomly:
+        vecs_ab_shp = shape + (3, 1)
+        vecs_a = np.random.random(vecs_ab_shp)
 
-    # Get vectors perpendicular to `vecs_a` and `vecs_b`:
-    vecs_c = np.cross(vecs_a, vecs_b, axisa=-2, axisb=-2, axisc=-2)
+        # Get vectors perpendicular to `vecs_a`:
+        vecs_b = vectors.perpendicular(vecs_a, axis=-2)
 
-    # Concatenate and normalise:
-    rot = np.concatenate([vecs_a, vecs_b, vecs_c], axis=-1)
-    rot_norm = vectors.normalise(rot, axis=-2)
+        # Get vectors perpendicular to `vecs_a` and `vecs_b`:
+        vecs_c = np.cross(vecs_a, vecs_b, axisa=-2, axisb=-2, axisc=-2)
+
+        # Concatenate and normalise:
+        rot = np.concatenate([vecs_a, vecs_b, vecs_c], axis=-1)
+        rot = vectors.normalise(rot, axis=-2)
+
+    elif method == 'axis_angle':
+
+        if max_angle_deg is None:
+            max_angle_deg = np.rad2deg(2 * np.pi)
+
+        # Form vectors by choosing two random spherical polar coordinates:
+
+        u_1 = np.random.random(shape)
+        u_2 = np.random.random(shape)
+        theta = np.arccos((2 * u_1) - 1)
+        phi = 2 * np.pi * u_2
+        vec = np.concatenate([
+            (np.sin(theta) * np.cos(phi))[..., None],
+            (np.sin(theta) * np.sin(phi))[..., None],
+            (np.cos(theta))[..., None],
+        ], axis=-1)
+
+        # Rotation angles (magnitude of rotation about above vectors):
+        angle = np.random.random(shape) * np.deg2rad(max_angle_deg)
+
+        # Combine to form stacks of rotation matrices:
+        rot = axang2rotmat(vec, angle, axis=-1, degrees=False, ndim_outer=len(shape))
 
     if single:
-        rot_norm = rot_norm[0]
+        rot = rot[0]
 
-    return rot_norm
+    return rot
