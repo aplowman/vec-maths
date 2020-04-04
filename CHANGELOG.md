@@ -1,5 +1,12 @@
 # Change Log
 
+## [0.1.4] - 2020.04.04
+
+### Added
+
+- Add methods argument (allowed values `orthonormal_basis` and `axis_angle`) to `get_random_rotation_matrix`
+- If method is `axis_angle`, can also specify `max_angle_deg` to be the maximum allowed rotation angle.
+
 ## [0.1.3] - 2019.04.21
 
 ### Added
