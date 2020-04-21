@@ -43,6 +43,17 @@ class NormaliseTestCase(unittest.TestCase):
         vecs_normd = vectors.normalise(vecs)
         self.assertTrue(vecs_normd.shape == shp)
 
+    def test_integer_array(self):
+        """Test equivalent results for integer and float input arrays."""
+
+        arr_int = np.array([2, 1, 3])
+        arr_int_normed = vectors.normalise(arr_int)
+
+        arr_float = np.array([2.0, 1.0, 3.0])
+        arr_float_normed = vectors.normalise(arr_float)
+
+        self.assertTrue(np.allclose(arr_int_normed, arr_float_normed))
+
 
 class PerpendicularTestCase(unittest.TestCase):
     """Tests on the function `vectors.perpendicular`."""

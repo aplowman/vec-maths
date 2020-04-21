@@ -23,6 +23,7 @@ def normalise(vecs, axis=-1):
     Returns
     -------
     vecs_normd : ndarray with same shape as input array
+        The returned array will always have a float dtype.
 
     """
     if axis < 0:
@@ -38,7 +39,7 @@ def normalise(vecs, axis=-1):
     norm_rs_rep = np.repeat(norm_rs, vecs.shape[axis], axis=axis)
     norm_non_zero = np.logical_not(np.isclose(norm_rs_rep, 0))
 
-    vecs_normd = np.copy(vecs)
+    vecs_normd = vecs.astype(np.float)
     vecs_normd[norm_non_zero] = (
         vecs_normd[norm_non_zero] / norm_rs_rep[norm_non_zero]
     )
