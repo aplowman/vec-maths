@@ -47,7 +47,7 @@ setup(
         'Github': 'https://github.com/aplowman/vec-maths',
     },
     classifiers=[
-        'Development Status :: 4 - Beta'
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
         'Topic :: Scientific/Engineering',
         'Programming Language :: Python :: 3.5',
