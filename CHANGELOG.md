@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.1.5] - 2020.04.21
+
+### Fixed
+
+- Fix bug in `vectors.normalise` where all integer arrays were normalised to zero arrays.
+
 ## [0.1.4] - 2020.04.04
 
 ### Added

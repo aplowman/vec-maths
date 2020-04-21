@@ -3,7 +3,7 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/aplowman/vec-maths/badge/master)](https://www.codefactor.io/repository/github/aplowman/vec-maths/overview/master)
 
 # vec-maths
-A collection of maths functions in Python.
+A collection of mostly vectorised maths functions in Python.
 
 ## Installation
 `pip install vecmaths`
