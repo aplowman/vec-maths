@@ -1,5 +1,11 @@
 # Change Log
 
+## [0.1.6] - 2020.09.09
+
+### Added
+
+- Add function `geometry.order_coplanar_points` to order a set of coplanar points either anticlockwise or clockwise.
+
 ## [0.1.5] - 2020.04.21
 
 ### Fixed
