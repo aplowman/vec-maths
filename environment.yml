@@ -1,6 +1,6 @@
 name: vecmaths_env
 dependencies:
-- python=3.6
+- python
 - pip
 - pylint
 - ipykernel
