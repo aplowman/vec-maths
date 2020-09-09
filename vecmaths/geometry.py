@@ -133,3 +133,15 @@ def get_box_xyz(box, origin=None, faces=False):
         xyz = dict(zip(face_names, coords))
 
     return xyz
+
+def polar2cart_2D(r, θ):
+    """
+    Convert 2D polar coordinates to Cartesian coordinates.
+
+    """
+
+    x = r * np.cos(θ)
+    y = r * np.sin(θ)
+
+    return x, y
+
